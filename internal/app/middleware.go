@@ -1,11 +1,10 @@
-package main
+package app
 
 import (
 	"crypto/rand"
 	"crypto/subtle"
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"html/template"
 	"net/http"
 	"net/url"
@@ -20,11 +19,8 @@ import (
 )
 
 const (
-	csrfSessionKey     = "csrf_token"
-	csrfFormField      = "_csrf"
-	checkinRewardPoint = 10
-	shareRewardPoint   = 5
-	publishMinPoints   = 100
+	csrfSessionKey = "csrf_token"
+	csrfFormField  = "_csrf"
 )
 
 var (
@@ -33,6 +29,7 @@ var (
 	articleHTMLPolicy     = newArticleHTMLPolicy()
 )
 
+// newArticleHTMLPolicy 创建文章 HTML 清理策略
 func newArticleHTMLPolicy() *bluemonday.Policy {
 	policy := bluemonday.UGCPolicy()
 	policy.AllowAttrs("class").Globally()
@@ -44,15 +41,18 @@ func newArticleHTMLPolicy() *bluemonday.Policy {
 	return policy
 }
 
-func sanitizeArticleContent(raw string) string {
+// SanitizeArticleContent 清理文章 HTML 内容
+func SanitizeArticleContent(raw string) string {
 	cleaned := articleHTMLPolicy.Sanitize(strings.TrimSpace(raw))
 	return strings.TrimSpace(cleaned)
 }
 
-func safeArticleHTML(raw string) template.HTML {
-	return template.HTML(sanitizeArticleContent(raw))
+// SafeArticleHTML 将文章内容转换为安全的 HTML
+func SafeArticleHTML(raw string) template.HTML {
+	return template.HTML(SanitizeArticleContent(raw))
 }
 
+// SecurityHeadersMiddleware 安全头中间件
 func (app *App) SecurityHeadersMiddleware() gin.HandlerFunc {
 	csp := strings.Join([]string{
 		"default-src 'self'",
@@ -80,6 +80,7 @@ func (app *App) SecurityHeadersMiddleware() gin.HandlerFunc {
 	}
 }
 
+// ensureCSRFToken 确保 CSRF Token 存在
 func (app *App) ensureCSRFToken(c *gin.Context) string {
 	if token := c.GetString("csrfToken"); token != "" {
 		return token
@@ -98,6 +99,7 @@ func (app *App) ensureCSRFToken(c *gin.Context) string {
 	return token
 }
 
+// CSRFMiddleware CSRF 验证中间件
 func (app *App) CSRFMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if isSafeHTTPMethod(c.Request.Method) {
@@ -127,6 +129,7 @@ func (app *App) CSRFMiddleware() gin.HandlerFunc {
 	}
 }
 
+// secureStringEqual 安全的字符串比较（防止时序攻击）
 func secureStringEqual(a, b string) bool {
 	if a == "" || b == "" {
 		return false
@@ -134,6 +137,7 @@ func secureStringEqual(a, b string) bool {
 	return subtle.ConstantTimeCompare([]byte(a), []byte(b)) == 1
 }
 
+// isSafeHTTPMethod 判断是否为安全的 HTTP 方法
 func isSafeHTTPMethod(method string) bool {
 	switch method {
 	case http.MethodGet, http.MethodHead, http.MethodOptions, http.MethodTrace:
@@ -143,6 +147,7 @@ func isSafeHTTPMethod(method string) bool {
 	}
 }
 
+// redirectBackOrDefault 重定向回来源页或默认页面
 func redirectBackOrDefault(c *gin.Context, fallback string) {
 	ref := strings.TrimSpace(c.Request.Referer())
 	if ref == "" {
@@ -172,6 +177,7 @@ func redirectBackOrDefault(c *gin.Context, fallback string) {
 	c.Redirect(http.StatusFound, target)
 }
 
+// generateSecureToken 生成安全的随机 Token
 func generateSecureToken(size int) string {
 	if size <= 0 {
 		size = 32
@@ -179,13 +185,14 @@ func generateSecureToken(size int) string {
 
 	buf := make([]byte, size)
 	if _, err := rand.Read(buf); err != nil {
-		return fmt.Sprintf("fallback-%d", time.Now().UnixNano())
+		return "fallback-" + time.Now().String()
 	}
 
 	return base64.RawURLEncoding.EncodeToString(buf)
 }
 
-func canPublishResource(user *models.User) bool {
+// CanPublishResource 判断用户是否可以发布资源
+func CanPublishResource(user *models.User) bool {
 	if user == nil {
 		return false
 	}
@@ -197,12 +204,123 @@ func canPublishResource(user *models.User) bool {
 	case "admin", "editor":
 		return true
 	case "user":
-		return user.Points >= publishMinPoints
+		return user.Points >= PublishMinPoints
 	default:
 		return false
 	}
 }
 
+// CommonMiddleware 通用中间件，注入公共数据
+func (app *App) CommonMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		session := sessions.Default(c)
+
+		var siteConfig models.SiteConfig
+		if cachedConfig, err := app.getSiteConfig(); err == nil {
+			siteConfig = cachedConfig
+		}
+		c.Set("siteConfig", siteConfig)
+
+		defaultLocale := app.I18n.Resolve(siteConfig.LocaleDefault, "zh")
+		cookieLocale, _ := c.Cookie("lang")
+		localeCandidate := strings.TrimSpace(c.Query("lang"))
+		if localeCandidate == "" {
+			localeCandidate = cookieLocale
+		}
+		locale := app.I18n.Resolve(localeCandidate, defaultLocale)
+		c.Set("locale", locale)
+		if cookieLocale != locale {
+			c.SetCookie("lang", locale, 86400*30, "/", "", false, false)
+		}
+		app.ensureCSRFToken(c)
+
+		if userID, ok := session.Get("userID").(uint); ok && userID > 0 {
+			var user models.User
+			if err := app.DB.First(&user, userID).Error; err == nil {
+				c.Set("user", &user)
+			}
+		}
+
+		if flash := session.Get("flash_success"); flash != nil {
+			c.Set("flash_success", flash)
+			session.Delete("flash_success")
+			session.Save()
+		}
+		if flash := session.Get("flash_error"); flash != nil {
+			c.Set("flash_error", flash)
+			session.Delete("flash_error")
+			session.Save()
+		}
+
+		c.Next()
+	}
+}
+
+// AuthRequired 认证中间件
+func (app *App) AuthRequired() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if _, exists := c.Get("user"); !exists {
+			app.setFlashKey(c, "flash_error", "flash.login_required")
+			c.Redirect(http.StatusFound, "/login")
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
+// AdminRequired 管理员权限中间件
+func (app *App) AdminRequired() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user := c.MustGet("user").(*models.User)
+		if user.Role != "admin" {
+			app.setFlashKey(c, "flash_error", "flash.no_permission")
+			c.Redirect(http.StatusFound, "/")
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
+// PublishAuthorized 发布权限中间件
+func (app *App) PublishAuthorized() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user := c.MustGet("user").(*models.User)
+		if !CanPublishResource(user) {
+			app.setFlash(c, "flash_error", app.tr(c, "flash.publish_not_authorized", PublishMinPoints))
+			c.Redirect(http.StatusFound, "/resources")
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
+// setFlash 设置 Flash 消息
+func (app *App) setFlash(c *gin.Context, key, value string) {
+	session := sessions.Default(c)
+	session.Set(key, value)
+	session.Save()
+}
+
+// setFlashKey 使用国际化键设置 Flash 消息
+func (app *App) setFlashKey(c *gin.Context, flashKey, i18nKey string, args ...interface{}) {
+	app.setFlash(c, flashKey, app.tr(c, i18nKey, args...))
+}
+
+// tr 获取国际化文本
+func (app *App) tr(c *gin.Context, key string, args ...interface{}) string {
+	siteConfig := c.MustGet("siteConfig").(models.SiteConfig)
+	defaultLocale := app.I18n.Resolve(siteConfig.LocaleDefault, "zh")
+	locale := c.GetString("locale")
+	if locale == "" {
+		locale = defaultLocale
+	}
+	return app.I18n.T(locale, key, args...)
+}
+
+// dayRange 获取当天的时间范围
 func dayRange(now time.Time) (time.Time, time.Time) {
 	year, month, day := now.Date()
 	location := now.Location()
