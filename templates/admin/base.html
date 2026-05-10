@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="{{.Locale}}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{if .Title}}{{.Title}} - {{end}}{{T "admin.title"}}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
+</head>
+<body
+    class="admin-body"
+    data-msg-confirm-action="{{T "js.confirm_action"}}"
+    data-msg-confirm-title="{{T "js.confirm_action_title"}}"
+    data-msg-confirm="{{T "js.confirm"}}"
+    data-msg-cancel="{{T "js.cancel"}}"
+>
+    <aside class="admin-sidebar">
+        <div class="admin-logo">
+            <a href="/admin">🛠️ {{T "admin.title"}}</a>
+        </div>
+        <nav class="admin-nav">
+            <a href="/admin" class="admin-nav-link{{if eq .ActiveNav "dashboard"}} active{{end}}">
+                <span class="nav-icon">📊</span> {{T "admin.nav.dashboard"}}
+            </a>
+            <a href="/admin/users" class="admin-nav-link{{if eq .ActiveNav "users"}} active{{end}}">
+                <span class="nav-icon">👥</span> {{T "admin.nav.users"}}
+            </a>
+            <a href="/admin/resources" class="admin-nav-link{{if eq .ActiveNav "resources"}} active{{end}}">
+                <span class="nav-icon">📦</span> {{T "admin.nav.resources"}}
+            </a>
+            <a href="/admin/articles" class="admin-nav-link{{if eq .ActiveNav "articles"}} active{{end}}">
+                <span class="nav-icon">📝</span> {{T "admin.nav.articles"}}
+            </a>
+            <a href="/admin/categories" class="admin-nav-link{{if eq .ActiveNav "categories"}} active{{end}}">
+                <span class="nav-icon">📁</span> {{T "admin.nav.categories"}}
+            </a>
+            <a href="/admin/tags" class="admin-nav-link{{if eq .ActiveNav "tags"}} active{{end}}">
+                <span class="nav-icon">🏷️</span> {{T "admin.nav.tags"}}
+            </a>
+            <a href="/admin/settings" class="admin-nav-link{{if eq .ActiveNav "settings"}} active{{end}}">
+                <span class="nav-icon">⚙️</span> {{T "admin.nav.settings"}}
+            </a>
+        </nav>
+        <div class="admin-sidebar-footer">
+            <a href="/" class="admin-nav-link">← {{T "admin.back_to_site"}}</a>
+            <a href="/logout" class="admin-nav-link">{{T "nav.logout"}}</a>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <h1 class="admin-page-title">{{.Title}}</h1>
+            <button class="admin-mobile-toggle" id="adminMobileToggle" aria-label="{{T "common.menu"}}">
+                <span></span><span></span><span></span>
+            </button>
+            <div class="admin-user">
+                <div class="lang-switch">
+                    <a href="{{langURL "zh"}}" class="lang-btn{{if langActive "zh"}} active{{end}}">{{T "lang.zh"}}</a>
+                    <a href="{{langURL "en"}}" class="lang-btn{{if langActive "en"}} active{{end}}">{{T "lang.en"}}</a>
+                </div>
+                <span>👤 {{.User.Username}}</span>
+            </div>
+        </header>
+        <nav class="admin-mobile-nav" id="adminMobileNav">
+            <a href="/admin" class="admin-mobile-link{{if eq .ActiveNav "dashboard"}} active{{end}}">{{T "admin.nav.dashboard"}}</a>
+            <a href="/admin/users" class="admin-mobile-link{{if eq .ActiveNav "users"}} active{{end}}">{{T "admin.nav.users"}}</a>
+            <a href="/admin/resources" class="admin-mobile-link{{if eq .ActiveNav "resources"}} active{{end}}">{{T "admin.nav.resources"}}</a>
+            <a href="/admin/articles" class="admin-mobile-link{{if eq .ActiveNav "articles"}} active{{end}}">{{T "admin.nav.articles"}}</a>
+            <a href="/admin/categories" class="admin-mobile-link{{if eq .ActiveNav "categories"}} active{{end}}">{{T "admin.nav.categories"}}</a>
+            <a href="/admin/tags" class="admin-mobile-link{{if eq .ActiveNav "tags"}} active{{end}}">{{T "admin.nav.tags"}}</a>
+            <a href="/admin/settings" class="admin-mobile-link{{if eq .ActiveNav "settings"}} active{{end}}">{{T "admin.nav.settings"}}</a>
+            <a href="/" class="admin-mobile-link">{{T "admin.back_to_site"}}</a>
+            <a href="/logout" class="admin-mobile-link">{{T "nav.logout"}}</a>
+        </nav>
+
+        <div class="admin-content">
+            {{if .FlashSuccess}}
+            <div class="alert alert-success">{{.FlashSuccess}}</div>
+            {{end}}
+            {{if .FlashError}}
+            <div class="alert alert-error">{{.FlashError}}</div>
+            {{end}}
+            {{template "admin_content" .}}
+        </div>
+    </main>
+
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/admin.js"></script>
+</body>
+</html>

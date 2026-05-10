@@ -1,0 +1,150 @@
+{{define "content"}}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">{{T "resource.publish_title"}}</h1>
+        <p class="page-desc">{{T "resource.publish_desc"}}</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="publish-layout">
+            <article class="publish-card">
+                <h2 class="publish-card-title">{{T "resource.publish_manual_title"}}</h2>
+                <p class="publish-card-desc">{{T "resource.publish_manual_desc"}}</p>
+                <form action="/publish/manual" method="POST" enctype="multipart/form-data" class="publish-form">
+                    {{csrfField}}
+                    <div class="form-group">
+                        <label for="manual_title">{{T "resource.form_title"}}</label>
+                        <input id="manual_title" name="title" type="text" required minlength="2" maxlength="200" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="manual_description">{{T "resource.form_description"}}</label>
+                        <textarea id="manual_description" name="description" required rows="4" minlength="5" class="form-input"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="manual_type">{{T "resource.type"}}</label>
+                        <select id="manual_type" name="resource_type" class="form-input" required>
+                            <option value="software">{{T "resource_type.software"}}</option>
+                            <option value="document">{{T "resource_type.document"}}</option>
+                            <option value="video">{{T "resource_type.video"}}</option>
+                            <option value="audio">{{T "resource_type.audio"}}</option>
+                            <option value="other">{{T "resource_type.other"}}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="manual_link">{{T "resource.form_link"}}</label>
+                        <input id="manual_link" name="link" type="url" class="form-input" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label for="manual_file">{{T "resource.form_file"}}</label>
+                        <input id="manual_file" name="resource_file" type="file" class="form-input">
+                        <p class="form-help">{{T "resource.form_file_help"}}</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="manual_category">{{T "common.category"}}</label>
+                        <select id="manual_category" name="category_id" class="form-input">
+                            <option value="">{{T "resource.form_no_category"}}</option>
+                            {{range .Categories}}
+                            <option value="{{.ID}}">{{.Name}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="manual_tags">{{T "common.tags"}}</label>
+                        <select id="manual_tags" name="tag_ids" multiple size="4" class="form-input publish-multi-select">
+                            {{range .Tags}}
+                            <option value="{{.ID}}">{{.Name}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">{{T "resource.publish_manual_submit"}}</button>
+                </form>
+            </article>
+
+            <article class="publish-card">
+                <h2 class="publish-card-title">{{T "resource.publish_import_title"}}</h2>
+                <p class="publish-card-desc">{{T "resource.publish_import_desc"}}</p>
+                <p class="publish-card-tip">
+                    <a href="/publish/template.csv" class="section-link">{{T "resource.publish_import_download_template"}}</a>
+                </p>
+                <form action="/publish/import" method="POST" enctype="multipart/form-data" class="publish-form">
+                    {{csrfField}}
+                    <div class="form-group">
+                        <label for="import_file">{{T "resource.publish_import_file"}}</label>
+                        <input id="import_file" name="import_file" type="file" accept=".csv,text/csv" required class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="import_default_type">{{T "resource.publish_import_default_type"}}</label>
+                        <select id="import_default_type" name="default_resource_type" class="form-input">
+                            <option value="other">{{T "resource_type.other"}}</option>
+                            <option value="software">{{T "resource_type.software"}}</option>
+                            <option value="document">{{T "resource_type.document"}}</option>
+                            <option value="video">{{T "resource_type.video"}}</option>
+                            <option value="audio">{{T "resource_type.audio"}}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="import_category">{{T "common.category"}}</label>
+                        <select id="import_category" name="category_id" class="form-input">
+                            <option value="">{{T "resource.form_no_category"}}</option>
+                            {{range .Categories}}
+                            <option value="{{.ID}}">{{.Name}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="import_tags">{{T "common.tags"}}</label>
+                        <select id="import_tags" name="tag_ids" multiple size="4" class="form-input publish-multi-select">
+                            {{range .Tags}}
+                            <option value="{{.ID}}">{{.Name}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-secondary btn-block">{{T "resource.publish_import_submit"}}</button>
+                </form>
+            </article>
+
+            <article class="publish-card">
+                <h2 class="publish-card-title">{{T "resource.publish_crawler_title"}}</h2>
+                <p class="publish-card-desc">{{T "resource.publish_crawler_desc"}}</p>
+                <form action="/publish/crawler" method="POST" class="publish-form">
+                    {{csrfField}}
+                    <div class="form-group">
+                        <label for="crawler_url">{{T "resource.publish_crawler_url"}}</label>
+                        <input id="crawler_url" name="crawl_url" type="url" required class="form-input" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label for="crawler_type">{{T "resource.type"}}</label>
+                        <select id="crawler_type" name="resource_type" class="form-input" required>
+                            <option value="software">{{T "resource_type.software"}}</option>
+                            <option value="document">{{T "resource_type.document"}}</option>
+                            <option value="video">{{T "resource_type.video"}}</option>
+                            <option value="audio">{{T "resource_type.audio"}}</option>
+                            <option value="other">{{T "resource_type.other"}}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="crawler_category">{{T "common.category"}}</label>
+                        <select id="crawler_category" name="category_id" class="form-input">
+                            <option value="">{{T "resource.form_no_category"}}</option>
+                            {{range .Categories}}
+                            <option value="{{.ID}}">{{.Name}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="crawler_tags">{{T "common.tags"}}</label>
+                        <select id="crawler_tags" name="tag_ids" multiple size="4" class="form-input publish-multi-select">
+                            {{range .Tags}}
+                            <option value="{{.ID}}">{{.Name}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-secondary btn-block">{{T "resource.publish_crawler_submit"}}</button>
+                </form>
+            </article>
+        </div>
+    </div>
+</section>
+{{end}}

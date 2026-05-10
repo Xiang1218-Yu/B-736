@@ -1,0 +1,37 @@
+{{define "admin_content"}}
+<div class="admin-form-container">
+    <form action="/admin/settings" method="POST" class="admin-form">
+        {{csrfField}}
+        <div class="form-group">
+            <label for="site_name">{{T "admin.settings.site_name"}}</label>
+            <input type="text" id="site_name" name="site_name" required class="form-input" value="{{.Config.SiteName}}">
+        </div>
+        <div class="form-group">
+            <label for="site_desc">{{T "admin.settings.site_desc"}}</label>
+            <input type="text" id="site_desc" name="site_desc" required class="form-input" value="{{.Config.SiteDesc}}">
+        </div>
+        <div class="form-group">
+            <label for="hero_title">{{T "admin.settings.hero_title"}}</label>
+            <input type="text" id="hero_title" name="hero_title" required class="form-input" value="{{.Config.HeroTitle}}">
+        </div>
+        <div class="form-group">
+            <label for="hero_subtitle">{{T "admin.settings.hero_subtitle"}}</label>
+            <input type="text" id="hero_subtitle" name="hero_subtitle" required class="form-input" value="{{.Config.HeroSubtitle}}">
+        </div>
+        <div class="form-group">
+            <label for="locale_default">{{T "admin.settings.default_locale"}}</label>
+            <select id="locale_default" name="locale_default" class="form-input">
+                <option value="zh" {{if or (eq .Config.LocaleDefault "zh") (eq .Config.LocaleDefault "zh-CN")}}selected{{end}}>{{T "lang.zh"}}</option>
+                <option value="en" {{if eq .Config.LocaleDefault "en"}}selected{{end}}>{{T "lang.en"}}</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="ads_json">{{T "admin.settings.ads_json"}}</label>
+            <textarea id="ads_json" name="ads_json" rows="6" class="form-input font-mono" placeholder='{{T "admin.settings.ads_json_placeholder"}}'>{{.Config.AdsJSON}}</textarea>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{T "admin.action.save"}}</button>
+        </div>
+    </form>
+</div>
+{{end}}

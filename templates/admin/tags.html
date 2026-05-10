@@ -1,0 +1,46 @@
+{{define "admin_content"}}
+<div class="admin-toolbar">
+    <form action="/admin/tags" method="POST" class="inline-add-form">
+        {{csrfField}}
+        <input type="text" name="name" required placeholder="{{T "admin.tags.new_placeholder"}}" class="form-input-sm">
+        <button type="submit" class="btn btn-primary btn-sm">{{T "admin.action.add"}}</button>
+    </form>
+</div>
+
+<table class="admin-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>{{T "admin.columns.name"}}</th>
+            <th>{{T "admin.columns.created_at"}}</th>
+            <th>{{T "admin.columns.action"}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .Tags}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td>
+                <form action="/admin/tags/{{.ID}}" method="POST" class="inline-edit-form">
+                    {{csrfField}}
+                    <input type="hidden" name="_method" value="PUT">
+                    <input type="text" name="name" value="{{.Name}}" required class="form-input-sm">
+                    <button type="submit" class="btn btn-sm btn-ghost">{{T "admin.action.save"}}</button>
+                </form>
+            </td>
+            <td>{{.CreatedAt | formatDate}}</td>
+            <td>
+                <form action="/admin/tags/{{.ID}}/delete" method="POST" style="display:inline;">
+                    {{csrfField}}
+                    <button type="submit" class="btn btn-sm btn-danger" data-confirm="{{T "admin.tags.delete_confirm"}}">{{T "admin.action.delete"}}</button>
+                </form>
+            </td>
+        </tr>
+        {{else}}
+        <tr>
+            <td colspan="4" class="empty-cell">{{T "admin.tags.empty"}}</td>
+        </tr>
+        {{end}}
+    </tbody>
+</table>
+{{end}}

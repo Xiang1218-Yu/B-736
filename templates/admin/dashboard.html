@@ -1,0 +1,111 @@
+{{define "admin_content"}}
+<div class="stats-grid">
+    <div class="stat-card-admin">
+        <div class="stat-icon">📦</div>
+        <div class="stat-info">
+            <span class="stat-value">{{.Stats.Resources}}</span>
+            <span class="stat-label">{{T "admin.dashboard.total_resources"}}</span>
+        </div>
+    </div>
+    <div class="stat-card-admin warning">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-info">
+            <span class="stat-value">{{.Stats.Pending}}</span>
+            <span class="stat-label">{{T "admin.status.pending"}}</span>
+        </div>
+    </div>
+    <div class="stat-card-admin">
+        <div class="stat-icon">📝</div>
+        <div class="stat-info">
+            <span class="stat-value">{{.Stats.Articles}}</span>
+            <span class="stat-label">{{T "nav.articles"}}</span>
+        </div>
+    </div>
+    <div class="stat-card-admin">
+        <div class="stat-icon">👥</div>
+        <div class="stat-info">
+            <span class="stat-value">{{.Stats.Users}}</span>
+            <span class="stat-label">{{T "common.user"}}</span>
+        </div>
+    </div>
+</div>
+
+{{if gt .Stats.Pending 0}}
+<div class="admin-section">
+    <h2>{{T "admin.dashboard.pending_resources"}}</h2>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>{{T "admin.columns.title"}}</th>
+                <th>{{T "admin.columns.type"}}</th>
+                <th>{{T "admin.columns.submitter"}}</th>
+                <th>{{T "admin.columns.created_at"}}</th>
+                <th>{{T "admin.columns.action"}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .PendingResources}}
+            <tr>
+                <td>{{.ID}}</td>
+                <td>{{.Title | truncate 30}}</td>
+                <td>{{resourceTypeLabel .ResourceType}}</td>
+                <td>{{.User.Username}}</td>
+                <td>{{.CreatedAt | formatDate}}</td>
+                <td>
+                    <form action="/admin/resources/{{.ID}}/review" method="POST" style="display:inline;">
+                        {{csrfField}}
+                        <input type="hidden" name="status" value="approved">
+                        <button type="submit" class="btn btn-sm btn-success">{{T "admin.action.approve"}}</button>
+                    </form>
+                    <form action="/admin/resources/{{.ID}}/review" method="POST" style="display:inline;">
+                        {{csrfField}}
+                        <input type="hidden" name="status" value="rejected">
+                        <button type="submit" class="btn btn-sm btn-danger">{{T "admin.action.reject"}}</button>
+                    </form>
+                </td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{end}}
+
+<div class="admin-section">
+    <h2>{{T "admin.dashboard.backups"}}</h2>
+    <div class="backup-actions">
+        <form action="/admin/backup" method="POST" style="display:inline;">
+            {{csrfField}}
+            <button type="submit" class="btn btn-primary">📥 {{T "admin.dashboard.create_backup"}}</button>
+        </form>
+    </div>
+    {{if .Backups}}
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>{{T "admin.dashboard.filename"}}</th>
+                <th>{{T "admin.columns.created_at"}}</th>
+                <th>{{T "admin.columns.action"}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Backups}}
+            <tr>
+                <td>{{.Name}}</td>
+                <td>{{.Time}}</td>
+                <td>
+                    <form action="/admin/restore" method="POST" style="display:inline;">
+                        {{csrfField}}
+                        <input type="hidden" name="filename" value="{{.Name}}">
+                        <button type="submit" class="btn btn-sm btn-warning" data-confirm="{{T "admin.dashboard.restore_confirm"}}">{{T "admin.action.restore"}}</button>
+                    </form>
+                </td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+    {{else}}
+    <p class="empty-state">{{T "admin.dashboard.no_backups"}}</p>
+    {{end}}
+</div>
+{{end}}

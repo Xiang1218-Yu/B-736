@@ -1,0 +1,24 @@
+{{define "admin_content"}}
+<div class="admin-form-container">
+    <form action="{{if .Article}}/admin/articles/{{.Article.ID}}{{else}}/admin/articles{{end}}" method="POST" class="admin-form">
+        {{csrfField}}
+        {{if .Article}}<input type="hidden" name="_method" value="PUT">{{end}}
+        <div class="form-group">
+            <label for="title">{{T "admin.article_form.title"}}</label>
+            <input type="text" id="title" name="title" required class="form-input" value="{{if .Article}}{{.Article.Title}}{{end}}" placeholder="{{T "admin.article_form.title_placeholder"}}">
+        </div>
+        <div class="form-group">
+            <label for="summary">{{T "admin.article_form.summary"}}</label>
+            <textarea id="summary" name="summary" required rows="2" class="form-input" placeholder="{{T "admin.article_form.summary_placeholder"}}">{{if .Article}}{{.Article.Summary}}{{end}}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="content">{{T "admin.article_form.content"}}</label>
+            <textarea id="content" name="content" required rows="15" class="form-input" placeholder="{{T "admin.article_form.content_placeholder"}}">{{if .Article}}{{.Article.Content}}{{end}}</textarea>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{if .Article}}{{T "admin.action.save"}}{{else}}{{T "admin.article_form.create_title"}}{{end}}</button>
+            <a href="/admin/articles" class="btn btn-ghost">{{T "admin.action.cancel"}}</a>
+        </div>
+    </form>
+</div>
+{{end}}

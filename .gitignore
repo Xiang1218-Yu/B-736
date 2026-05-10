@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+dist/
+build/
+*.exe
+server
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# System
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+
+# Temp
+tmp/
+temp/

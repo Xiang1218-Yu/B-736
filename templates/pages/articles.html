@@ -1,0 +1,44 @@
+{{define "content"}}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">{{T "article.title"}}</h1>
+        <p class="page-desc">{{T "article.list_desc"}}</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="article-list">
+            {{range .Articles}}
+            <a href="/articles/{{.ID}}" class="article-card">
+                <div class="article-card-content">
+                    <h3 class="article-card-title">{{.Title}}</h3>
+                    <p class="article-card-summary">{{.Summary | truncate 200}}</p>
+                    <div class="article-card-meta">
+                        <span>👤 {{.User.Username}}</span>
+                        <span>👁 {{.Views}}</span>
+                        <span>📅 {{.CreatedAt | formatDate}}</span>
+                    </div>
+                </div>
+            </a>
+            {{else}}
+            <div class="empty-state">
+                <p>{{T "article.no_articles"}}</p>
+            </div>
+            {{end}}
+        </div>
+
+        {{if gt .TotalPages 1}}
+        <div class="pagination">
+            {{if gt .Page 1}}
+            <a href="?page={{sub .Page 1}}" class="page-link">← {{T "common.prev_page"}}</a>
+            {{end}}
+            <span class="page-info">{{T "common.page_info" .Page .TotalPages}}</span>
+            {{if lt .Page .TotalPages}}
+            <a href="?page={{add .Page 1}}" class="page-link">{{T "common.next_page"}} →</a>
+            {{end}}
+        </div>
+        {{end}}
+    </div>
+</section>
+{{end}}

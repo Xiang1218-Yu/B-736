@@ -1,0 +1,68 @@
+{{define "content"}}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">{{T "profile.title"}}</h1>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="profile-layout">
+            <div class="profile-sidebar">
+                <div class="profile-card">
+                    <div class="profile-avatar">{{slice .User.Username 0 1 | upper}}</div>
+                    <h2 class="profile-name">{{.User.Username}}</h2>
+                    <p class="profile-role">{{roleLabel .User.Role}}</p>
+                    <div class="profile-points">
+                        <span class="points-icon">💎</span>
+                        <span class="points-value">{{.User.Points}}</span>
+                        <span class="points-label">{{T "profile.points"}}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-main">
+                <div class="profile-section">
+                    <h3>{{T "profile.checkin_title"}}</h3>
+                    {{if .CanCheckin}}
+                    <form action="/checkin" method="POST">
+                        {{csrfField}}
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            ✅ {{T "profile.checkin_button"}}
+                        </button>
+                    </form>
+                    {{else}}
+                    <div class="checkin-done">
+                        <span class="checkin-icon">🎉</span>
+                        <p>{{T "profile.checkin_done"}}</p>
+                    </div>
+                    {{end}}
+                </div>
+
+                <div class="profile-section">
+                    <h3>{{T "profile.account_info"}}</h3>
+                    <ul class="info-list">
+                        <li><strong>{{T "auth.username"}}:</strong> {{.User.Username}}</li>
+                        <li><strong>{{T "profile.role"}}:</strong> {{roleLabel .User.Role}}</li>
+                        <li><strong>{{T "profile.points"}}:</strong> {{.User.Points}}</li>
+                        <li><strong>{{T "profile.status"}}:</strong> {{statusLabel .User.Status}}</li>
+                        <li><strong>{{T "profile.register_time"}}:</strong> {{.User.CreatedAt | formatDate}}</li>
+                        {{if .User.LastCheckinAt}}
+                        <li><strong>{{T "profile.last_checkin"}}:</strong> {{.User.LastCheckinAt | formatDate}}</li>
+                        {{end}}
+                    </ul>
+                </div>
+
+                <div class="profile-section">
+                    <h3>{{T "profile.points_rule"}}</h3>
+                    <ul class="rule-list">
+                        <li>🎁 {{T "profile.rule_register"}}</li>
+                        <li>✅ {{T "profile.rule_daily"}}</li>
+                        <li>📤 {{T "profile.rule_share"}}</li>
+                        <li>🛡️ {{T "profile.rule_publish_requirement" .PublishMinPoints}}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{{end}}

@@ -1,0 +1,83 @@
+{{define "content"}}
+<section class="page-header">
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="/">{{T "nav.home"}}</a> / <a href="/articles">{{T "nav.articles"}}</a> / <span>{{.Article.Title}}</span>
+        </nav>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <article class="article-detail">
+            <header class="article-header">
+                <h1 class="article-title">{{.Article.Title}}</h1>
+                <div class="article-meta">
+                    <span class="author">👤 {{.Article.User.Username}}</span>
+                    <span class="views">👁 {{.Article.Views}}</span>
+                    <span class="date">📅 {{.Article.CreatedAt | formatDate}}</span>
+                </div>
+            </header>
+            <div class="article-content">
+                {{.Article.Content | safeHTML}}
+            </div>
+        </article>
+
+        {{with index .Ads "article-detail-inline"}}
+        {{if .Enabled}}
+        <div class="ad-slot ad-slot-inline article-ad-slot" data-ad-slot="{{.Code}}">
+            <span class="ad-badge">{{T "ad.badge"}}</span>
+            <div class="ad-content">
+                <h3 class="ad-title">{{.Title}}</h3>
+                <p class="ad-desc">{{.Desc}}</p>
+            </div>
+            {{if .Link}}
+            <a href="{{.Link}}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">{{if .CTA}}{{.CTA}}{{else}}{{T "ad.learn_more"}}{{end}}</a>
+            {{else}}
+            <button
+                type="button"
+                class="btn btn-ghost btn-sm ad-contact-btn"
+                data-ad-contact-title="{{.Title}}"
+                data-ad-contact="{{if .Contact}}{{.Contact}}{{else}}{{T "ad.default_contact"}}{{end}}"
+            >
+                {{if .CTA}}{{.CTA}}{{else}}{{T "ad.reserved_slot"}}{{end}}
+            </button>
+            {{end}}
+        </div>
+        {{end}}
+        {{end}}
+
+        <div class="comments-section">
+            <h2 class="comments-title">{{T "comment.title"}} ({{len .Comments}})</h2>
+
+            {{if .User}}
+            <form action="/articles/{{.Article.ID}}/comments" method="POST" class="comment-form">
+                {{csrfField}}
+                <div class="form-group">
+                    <textarea name="content" rows="3" placeholder="{{T "comment.write_placeholder"}}" required class="form-input"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">{{T "comment.submit"}}</button>
+            </form>
+            {{else}}
+            <div class="login-prompt">
+                <a href="/login">{{T "nav.login"}}</a> {{T "comment.login_to_comment"}}
+            </div>
+            {{end}}
+
+            <div class="comments-list">
+                {{range .Comments}}
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <span class="comment-author">{{.User.Username}}</span>
+                        <span class="comment-time">{{.CreatedAt | formatDate}}</span>
+                    </div>
+                    <p class="comment-content">{{.Content}}</p>
+                </div>
+                {{else}}
+                <p class="empty-state">{{T "comment.no_comments"}}</p>
+                {{end}}
+            </div>
+        </div>
+    </div>
+</section>
+{{end}}

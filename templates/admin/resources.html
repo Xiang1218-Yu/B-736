@@ -1,0 +1,64 @@
+{{define "admin_content"}}
+<div class="admin-toolbar">
+    <div class="filter-group">
+        <a href="/admin/resources" class="btn {{if eq .Status ""}}btn-primary{{else}}btn-ghost{{end}}">{{T "admin.filter.all"}}</a>
+        <a href="/admin/resources?status=pending" class="btn {{if eq .Status "pending"}}btn-primary{{else}}btn-ghost{{end}}">{{T "admin.status.pending"}}</a>
+        <a href="/admin/resources?status=approved" class="btn {{if eq .Status "approved"}}btn-primary{{else}}btn-ghost{{end}}">{{T "admin.status.approved"}}</a>
+        <a href="/admin/resources?status=rejected" class="btn {{if eq .Status "rejected"}}btn-primary{{else}}btn-ghost{{end}}">{{T "admin.status.rejected"}}</a>
+    </div>
+</div>
+
+<table class="admin-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>{{T "admin.columns.title"}}</th>
+            <th>{{T "admin.columns.type"}}</th>
+            <th>{{T "admin.columns.category"}}</th>
+            <th>{{T "admin.columns.status"}}</th>
+            <th>{{T "admin.columns.views"}}</th>
+            <th>{{T "admin.columns.rating"}}</th>
+            <th>{{T "admin.columns.submitter"}}</th>
+            <th>{{T "admin.columns.action"}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .Resources}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td><a href="/resources/{{.ID}}" target="_blank">{{.Title | truncate 25}}</a></td>
+            <td>{{resourceTypeLabel .ResourceType}}</td>
+            <td>{{if .Category}}{{.Category.Name}}{{else}}-{{end}}</td>
+            <td>
+                <span class="status-badge status-{{.Status}}">
+                    {{statusLabel .Status}}
+                </span>
+            </td>
+            <td>{{.Views}}</td>
+            <td>{{printf "%.1f" .RatingScore}}</td>
+            <td>{{.User.Username}}</td>
+            <td class="action-cell">
+                {{if eq .Status "pending"}}
+                <form action="/admin/resources/{{.ID}}/review" method="POST" style="display:inline;">
+                    {{csrfField}}
+                    <input type="hidden" name="status" value="approved">
+                    <button type="submit" class="btn btn-sm btn-success">✓</button>
+                </form>
+                <form action="/admin/resources/{{.ID}}/review" method="POST" style="display:inline;">
+                    {{csrfField}}
+                    <input type="hidden" name="status" value="rejected">
+                    <button type="submit" class="btn btn-sm btn-danger">✗</button>
+                </form>
+                {{else}}
+                -
+                {{end}}
+            </td>
+        </tr>
+        {{else}}
+        <tr>
+            <td colspan="9" class="empty-cell">{{T "admin.empty.no_data"}}</td>
+        </tr>
+        {{end}}
+    </tbody>
+</table>
+{{end}}

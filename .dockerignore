@@ -1,0 +1,21 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+
+# Documentation
+*.md
+
+# Build artifacts
+*.exe
+server
+
+# System
+.DS_Store
+
+# Agent
+.agent
+.waylog

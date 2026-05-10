@@ -1,0 +1,44 @@
+version: "3.9"
+services:
+  db:
+    image: mysql:8.0
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: prompt736
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: prompt736
+      JWT_SECRET: prompt736_secret
+      UPLOAD_DIR: /data/uploads
+      BACKUP_DIR: /data/backups
+      GIN_MODE: release
+    ports:
+      - "3000:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - app_data:/data
+
+volumes:
+  db_data:
+  app_data:

@@ -1,0 +1,44 @@
+{{define "admin_content"}}
+<div class="admin-toolbar">
+    <a href="/admin/articles/new" class="btn btn-primary">+ {{T "admin.article_form.create_title"}}</a>
+</div>
+
+<table class="admin-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>{{T "admin.columns.title"}}</th>
+            <th>{{T "admin.columns.summary"}}</th>
+            <th>{{T "admin.columns.status"}}</th>
+            <th>{{T "admin.columns.views"}}</th>
+            <th>{{T "admin.columns.author"}}</th>
+            <th>{{T "admin.columns.created_at"}}</th>
+            <th>{{T "admin.columns.action"}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .Articles}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td><a href="/articles/{{.ID}}" target="_blank">{{.Title | truncate 25}}</a></td>
+            <td>{{.Summary | truncate 30}}</td>
+            <td>
+                <span class="status-badge status-{{.Status}}">
+                    {{statusLabel .Status}}
+                </span>
+            </td>
+            <td>{{.Views}}</td>
+            <td>{{.User.Username}}</td>
+            <td>{{.CreatedAt | formatDate}}</td>
+            <td>
+                <a href="/admin/articles/{{.ID}}/edit" class="btn btn-sm btn-ghost">{{T "admin.action.edit"}}</a>
+            </td>
+        </tr>
+        {{else}}
+        <tr>
+            <td colspan="8" class="empty-cell">{{T "admin.empty.no_data"}}</td>
+        </tr>
+        {{end}}
+    </tbody>
+</table>
+{{end}}

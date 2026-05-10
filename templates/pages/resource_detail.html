@@ -1,0 +1,152 @@
+{{define "content"}}
+<section class="page-header">
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="/">{{T "nav.home"}}</a> / <a href="/resources">{{T "nav.resources"}}</a> / <span>{{.Resource.Title}}</span>
+        </nav>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="detail-layout">
+            <div class="detail-main">
+                <div class="detail-card">
+                    <div class="detail-header">
+                        <span class="resource-type {{resourceTypeClass .Resource.ResourceType}}">{{resourceTypeLabel .Resource.ResourceType}}</span>
+                        <h1 class="detail-title">{{.Resource.Title}}</h1>
+                        <div class="detail-meta">
+                            <span>👤 {{.Resource.User.Username}}</span>
+                            <span>👁 {{.Resource.Views}}</span>
+                            <span>📅 {{.Resource.CreatedAt | formatDate}}</span>
+                            {{if .Resource.Category}}
+                            <span>📁 {{.Resource.Category.Name}}</span>
+                            {{end}}
+                        </div>
+                    </div>
+                    <div class="detail-body">
+                        <p class="detail-desc">{{.Resource.Description}}</p>
+
+                        {{if .Resource.Tags}}
+                        <div class="detail-tags">
+                            {{range .Resource.Tags}}
+                            <span class="tag">{{.Name}}</span>
+                            {{end}}
+                        </div>
+                        {{end}}
+
+                        <div class="detail-actions">
+                            {{if .Resource.Link}}
+                            <a href="{{.Resource.Link}}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">
+                                🔗 {{T "resource.detail_link"}}
+                            </a>
+                            {{end}}
+                            {{if .Resource.FilePath}}
+                            <a href="/uploads/{{.Resource.FilePath}}" download class="btn btn-secondary btn-lg">
+                                📥 {{T "resource.detail_download"}}
+                            </a>
+                            {{end}}
+                            {{if .User}}
+                            <form action="/resources/{{.Resource.ID}}/share" method="POST" style="display:inline;">
+                                {{csrfField}}
+                                <button type="submit" class="btn btn-ghost">📤 {{T "resource.detail_share"}}</button>
+                            </form>
+                            {{end}}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comments-section">
+                    <h2 class="comments-title">{{T "comment.title"}} ({{len .Comments}})</h2>
+
+                    {{if .User}}
+                    <form action="/resources/{{.Resource.ID}}/comments" method="POST" class="comment-form">
+                        {{csrfField}}
+                        <div class="form-group">
+                            <label>{{T "common.rating"}}</label>
+                            <div class="rating-input">
+                                {{range $i := iterate 5}}
+                                <input type="radio" name="rating" value="{{add $i 1}}" id="star{{add $i 1}}" required>
+                                <label for="star{{add $i 1}}">⭐</label>
+                                {{end}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <textarea name="content" rows="3" placeholder="{{T "comment.write_placeholder"}}" required class="form-input"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">{{T "comment.submit"}}</button>
+                    </form>
+                    {{else}}
+                    <div class="login-prompt">
+                        <a href="/login">{{T "nav.login"}}</a> {{T "comment.login_to_comment"}}
+                    </div>
+                    {{end}}
+
+                    <div class="comments-list">
+                        {{range .Comments}}
+                        <div class="comment-item">
+                            <div class="comment-header">
+                                <span class="comment-author">{{.User.Username}}</span>
+                                <span class="comment-rating">{{range iterate .Rating}}⭐{{end}}</span>
+                                <span class="comment-time">{{.CreatedAt | formatDate}}</span>
+                            </div>
+                            <p class="comment-content">{{.Content}}</p>
+                        </div>
+                        {{else}}
+                        <p class="empty-state">{{T "comment.no_comments"}}</p>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+
+            <aside class="detail-sidebar">
+                <div class="sidebar-card">
+                    <h3>{{T "resource.score_title"}}</h3>
+                    <div class="rating-display">
+                        <span class="rating-value">{{printf "%.1f" .Resource.RatingScore}}</span>
+                        <span class="rating-stars">{{ratingStars .Resource.RatingScore}}</span>
+                        <span class="rating-count">({{T "resource.rating_count" .Resource.RatingCount}})</span>
+                    </div>
+                </div>
+                <div class="sidebar-card">
+                    <h3>{{T "resource.info_title"}}</h3>
+                    <ul class="info-list">
+                        <li><strong>{{T "resource.type"}}:</strong> {{resourceTypeLabel .Resource.ResourceType}}</li>
+                        <li><strong>{{T "resource.source"}}:</strong> {{sourceTypeLabel .Resource.SourceType}}</li>
+                        <li><strong>{{T "resource.publisher"}}:</strong> {{.Resource.User.Username}}</li>
+                        <li><strong>{{T "resource.publish_time"}}:</strong> {{.Resource.CreatedAt | formatDate}}</li>
+                    </ul>
+                </div>
+                {{with index .Ads "resource-detail-sidebar"}}
+                {{if .Enabled}}
+                <div class="sidebar-card ad-slot ad-slot-sidebar" data-ad-slot="{{.Code}}">
+                    <div class="ad-slot-sidebar-header">
+                        <span class="ad-badge">{{T "ad.badge"}}</span>
+                        <h3 class="ad-title">{{.Title}}</h3>
+                    </div>
+                    {{if .ImageURL}}
+                    <div class="ad-slot-media">
+                        <img src="{{.ImageURL}}" alt="{{.Title}}" loading="lazy">
+                    </div>
+                    {{end}}
+                    <p class="ad-desc">{{.Desc}}</p>
+                    {{if .Link}}
+                    <a href="{{.Link}}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">{{if .CTA}}{{.CTA}}{{else}}{{T "ad.learn_more"}}{{end}}</a>
+                    {{else}}
+                    <button
+                        type="button"
+                        class="btn btn-ghost btn-sm ad-contact-btn"
+                        data-ad-contact-title="{{.Title}}"
+                        data-ad-contact="{{if .Contact}}{{.Contact}}{{else}}{{T "ad.default_contact"}}{{end}}"
+                    >
+                        {{if .CTA}}{{.CTA}}{{else}}{{T "ad.reserved_slot"}}{{end}}
+                    </button>
+                    {{end}}
+                </div>
+                {{end}}
+                {{end}}
+            </aside>
+        </div>
+    </div>
+</section>
+{{end}}

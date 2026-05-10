@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="{{.Locale}}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{if .Title}}{{.Title}} - {{end}}{{siteText "site.name" .SiteConfig.SiteName}}</title>
+    <meta name="description" content="{{siteText "site.desc" .SiteConfig.SiteDesc}}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body
+    data-msg-password-mismatch="{{T "js.password_mismatch"}}"
+    data-msg-processing="{{T "js.processing"}}"
+    data-msg-choose-file="{{T "js.choose_file"}}"
+    data-msg-no-file-selected="{{T "js.no_file_selected"}}"
+    data-msg-select-tags="{{T "js.select_tags"}}"
+    data-msg-tags-selected="{{T "js.tags_selected"}}"
+    data-msg-notice="{{T "js.notice"}}"
+    data-msg-confirm="{{T "js.confirm"}}"
+    data-msg-cancel="{{T "js.cancel"}}"
+    data-msg-got-it="{{T "js.got_it"}}"
+    data-msg-contact-details="{{T "js.contact_details"}}"
+    data-msg-contact-default="{{T "js.contact_default"}}"
+>
+    <header class="header">
+        <div class="container header-inner">
+            <a href="/" class="logo">
+                <span class="logo-icon">✨</span>
+                <span class="logo-text">{{siteText "site.name" .SiteConfig.SiteName}}</span>
+            </a>
+            <nav class="nav">
+                <a href="/" class="nav-link{{if eq .ActiveNav "home"}} active{{end}}">{{T "nav.home"}}</a>
+                <a href="/resources" class="nav-link{{if eq .ActiveNav "resources"}} active{{end}}">{{T "nav.resources"}}</a>
+                <a href="/articles" class="nav-link{{if eq .ActiveNav "articles"}} active{{end}}">{{T "nav.articles"}}</a>
+            </nav>
+            <div class="header-actions">
+                <div class="lang-switch">
+                    <a href="{{langURL "zh"}}" class="lang-btn{{if langActive "zh"}} active{{end}}">{{T "lang.zh"}}</a>
+                    <a href="{{langURL "en"}}" class="lang-btn{{if langActive "en"}} active{{end}}">{{T "lang.en"}}</a>
+                </div>
+                {{if .User}}
+                    <div class="user-menu">
+                        <span class="user-points">💎 {{.User.Points}}</span>
+                        {{if .CanPublish}}
+                            <a href="/publish" class="btn btn-primary btn-sm">{{T "nav.publish"}}</a>
+                        {{end}}
+                        <a href="/profile" class="btn btn-ghost">{{.User.Username}}</a>
+                        {{if eq .User.Role "admin"}}
+                            <a href="/admin" class="btn btn-ghost">{{T "nav.admin"}}</a>
+                        {{end}}
+                        <a href="/logout" class="btn btn-ghost">{{T "nav.logout"}}</a>
+                    </div>
+                {{else}}
+                    <a href="/login" class="btn btn-ghost">{{T "nav.login"}}</a>
+                    <a href="/register" class="btn btn-primary">{{T "nav.register"}}</a>
+                {{end}}
+            </div>
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="{{T "common.menu"}}">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </header>
+
+    <div class="toast-stack" id="toastStack">
+        {{if .FlashSuccess}}
+        <div class="alert alert-success toast" data-toast>{{.FlashSuccess}}</div>
+        {{end}}
+        {{if .FlashError}}
+        <div class="alert alert-error toast" data-toast>{{.FlashError}}</div>
+        {{end}}
+    </div>
+
+    <main class="main">
+        {{template "content" .}}
+    </main>
+
+    {{with index .Ads "global-footer"}}
+    {{if .Enabled}}
+    <section class="global-ad-section">
+        <div class="container">
+            <div class="ad-slot ad-slot-global" data-ad-slot="{{.Code}}">
+                <span class="ad-badge">{{T "ad.badge"}}</span>
+                <div class="ad-content">
+                    <h3 class="ad-title">{{.Title}}</h3>
+                    <p class="ad-desc">{{.Desc}}</p>
+                </div>
+                {{if .Link}}
+                <a href="{{.Link}}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">{{if .CTA}}{{.CTA}}{{else}}{{T "ad.learn_more"}}{{end}}</a>
+                {{else}}
+                <button
+                    type="button"
+                    class="btn btn-ghost btn-sm ad-contact-btn"
+                    data-ad-contact-title="{{.Title}}"
+                    data-ad-contact="{{if .Contact}}{{.Contact}}{{else}}{{T "ad.default_contact"}}{{end}}"
+                >
+                    {{if .CTA}}{{.CTA}}{{else}}{{T "ad.reserved_slot"}}{{end}}
+                </button>
+                {{end}}
+            </div>
+        </div>
+    </section>
+    {{end}}
+    {{end}}
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 {{siteText "site.name" .SiteConfig.SiteName}}. {{T "site.rights_reserved"}}</p>
+        </div>
+    </footer>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+{{define "content"}}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">{{T "resource.library_title"}}</h1>
+        <p class="page-desc">{{T "resource.library_desc"}}</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="filters">
+            <form method="GET" action="/resources" class="filter-form">
+                <div class="search-box">
+                    <input type="text" name="q" placeholder="{{T "resource.search_placeholder"}}" value="{{.Query}}" class="search-input">
+                    <button type="submit" class="search-btn">🔍</button>
+                </div>
+                <div class="custom-select" data-custom-select>
+                    <input type="hidden" name="category_id" value="{{.CategoryID}}">
+                    <button type="button" class="custom-select-trigger" data-select-trigger>
+                        <span class="custom-select-label">{{T "common.all_categories"}}</span>
+                        <span class="custom-select-arrow" aria-hidden="true"></span>
+                    </button>
+                    <div class="custom-select-menu" data-select-menu>
+                        <button type="button" class="custom-select-option{{if eq .CategoryID 0}} active{{end}}" data-value="" data-label="{{T "common.all_categories"}}">{{T "common.all_categories"}}</button>
+                        {{range .Categories}}
+                        <button type="button" class="custom-select-option{{if eq $.CategoryID .ID}} active{{end}}" data-value="{{.ID}}" data-label="{{.Name}}">{{.Name}}</button>
+                        {{end}}
+                    </div>
+                </div>
+                <div class="custom-select" data-custom-select>
+                    <input type="hidden" name="type" value="{{.Type}}">
+                    <button type="button" class="custom-select-trigger" data-select-trigger>
+                        <span class="custom-select-label">{{T "common.all_types"}}</span>
+                        <span class="custom-select-arrow" aria-hidden="true"></span>
+                    </button>
+                    <div class="custom-select-menu" data-select-menu>
+                        <button type="button" class="custom-select-option{{if eq .Type ""}} active{{end}}" data-value="" data-label="{{T "common.all_types"}}">{{T "common.all_types"}}</button>
+                        <button type="button" class="custom-select-option{{if eq .Type "software"}} active{{end}}" data-value="software" data-label="{{T "resource_type.software"}}">{{T "resource_type.software"}}</button>
+                        <button type="button" class="custom-select-option{{if eq .Type "document"}} active{{end}}" data-value="document" data-label="{{T "resource_type.document"}}">{{T "resource_type.document"}}</button>
+                        <button type="button" class="custom-select-option{{if eq .Type "video"}} active{{end}}" data-value="video" data-label="{{T "resource_type.video"}}">{{T "resource_type.video"}}</button>
+                        <button type="button" class="custom-select-option{{if eq .Type "audio"}} active{{end}}" data-value="audio" data-label="{{T "resource_type.audio"}}">{{T "resource_type.audio"}}</button>
+                        <button type="button" class="custom-select-option{{if eq .Type "other"}} active{{end}}" data-value="other" data-label="{{T "resource_type.other"}}">{{T "resource_type.other"}}</button>
+                    </div>
+                </div>
+                <div class="custom-select" data-custom-select>
+                    <input type="hidden" name="tag_id" value="{{.TagID}}">
+                    <button type="button" class="custom-select-trigger" data-select-trigger>
+                        <span class="custom-select-label">{{T "common.all_tags"}}</span>
+                        <span class="custom-select-arrow" aria-hidden="true"></span>
+                    </button>
+                    <div class="custom-select-menu" data-select-menu>
+                        <button type="button" class="custom-select-option{{if eq .TagID 0}} active{{end}}" data-value="" data-label="{{T "common.all_tags"}}">{{T "common.all_tags"}}</button>
+                        {{range .Tags}}
+                        <button type="button" class="custom-select-option{{if eq $.TagID .ID}} active{{end}}" data-value="{{.ID}}" data-label="{{.Name}}">{{.Name}}</button>
+                        {{end}}
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        {{with index .Ads "resource-list-inline"}}
+        {{if .Enabled}}
+        <div class="ad-slot ad-slot-inline" data-ad-slot="{{.Code}}">
+            <span class="ad-badge">{{T "ad.badge"}}</span>
+            <div class="ad-content">
+                <h3 class="ad-title">{{.Title}}</h3>
+                <p class="ad-desc">{{.Desc}}</p>
+            </div>
+            {{if .Link}}
+            <a href="{{.Link}}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">{{if .CTA}}{{.CTA}}{{else}}{{T "ad.learn_more"}}{{end}}</a>
+            {{else}}
+            <button
+                type="button"
+                class="btn btn-ghost btn-sm ad-contact-btn"
+                data-ad-contact-title="{{.Title}}"
+                data-ad-contact="{{if .Contact}}{{.Contact}}{{else}}{{T "ad.default_contact"}}{{end}}"
+            >
+                {{if .CTA}}{{.CTA}}{{else}}{{T "ad.reserved_slot"}}{{end}}
+            </button>
+            {{end}}
+        </div>
+        {{end}}
+        {{end}}
+
+        <div class="resource-grid">
+            {{range .Resources}}
+            <a href="/resources/{{.ID}}" class="resource-card">
+                <div class="resource-card-header">
+                    <span class="resource-type {{resourceTypeClass .ResourceType}}">{{resourceTypeLabel .ResourceType}}</span>
+                    <span class="resource-views">👁 {{.Views}}</span>
+                </div>
+                <h3 class="resource-card-title">{{.Title}}</h3>
+                <p class="resource-card-desc">{{.Description | truncate 100}}</p>
+                <div class="resource-card-tags">
+                    {{range .Tags}}
+                    <span class="tag">{{.Name}}</span>
+                    {{end}}
+                </div>
+                <div class="resource-card-footer">
+                    {{if .Category}}
+                    <span class="resource-category">📁 {{.Category.Name}}</span>
+                    {{end}}
+                    <span class="resource-rating">⭐ {{printf "%.1f" .RatingScore}}</span>
+                </div>
+            </a>
+            {{else}}
+            <div class="empty-state full-width">
+                <p>{{T "resource.no_resources"}}</p>
+            </div>
+            {{end}}
+        </div>
+
+        {{if gt .TotalPages 1}}
+        <div class="pagination">
+            {{if gt .Page 1}}
+            <a href="?page={{sub .Page 1}}{{.QueryParams}}" class="page-link">← {{T "common.prev_page"}}</a>
+            {{end}}
+            <span class="page-info">{{T "common.page_info" .Page .TotalPages}}</span>
+            {{if lt .Page .TotalPages}}
+            <a href="?page={{add .Page 1}}{{.QueryParams}}" class="page-link">{{T "common.next_page"}} →</a>
+            {{end}}
+        </div>
+        {{end}}
+    </div>
+</section>
+{{end}}

@@ -1,0 +1,125 @@
+{{define "content"}}
+<section class="hero">
+    <div class="container">
+        <h1 class="hero-title">{{siteText "home.hero_title" .SiteConfig.HeroTitle}}</h1>
+        <p class="hero-subtitle">{{siteText "home.hero_subtitle" .SiteConfig.HeroSubtitle}}</p>
+        <div class="hero-stats">
+            <div class="stat-card">
+                <span class="stat-value">{{.Stats.Resources}}</span>
+                <span class="stat-label">{{T "nav.resources"}}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">{{.Stats.Articles}}</span>
+                <span class="stat-label">{{T "nav.articles"}}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">{{.Stats.Users}}</span>
+                <span class="stat-label">{{T "common.user"}}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">{{.Stats.Comments}}</span>
+                <span class="stat-label">{{T "common.comments"}}</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{with index .Ads "hero-banner"}}
+{{if .Enabled}}
+<section class="section ad-section">
+    <div class="container">
+        <div class="ad-slot" data-ad-slot="{{.Code}}">
+            <span class="ad-badge">{{T "ad.badge"}}</span>
+            <div class="ad-content">
+                <h3 class="ad-title">{{.Title}}</h3>
+                <p class="ad-desc">{{.Desc}}</p>
+            </div>
+            {{if .Link}}
+            <a href="{{.Link}}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">{{if .CTA}}{{.CTA}}{{else}}{{T "ad.learn_more"}}{{end}}</a>
+            {{else}}
+            <button
+                type="button"
+                class="btn btn-ghost btn-sm ad-contact-btn"
+                data-ad-contact-title="{{.Title}}"
+                data-ad-contact="{{if .Contact}}{{.Contact}}{{else}}{{T "ad.default_contact"}}{{end}}"
+            >
+                {{if .CTA}}{{.CTA}}{{else}}{{T "ad.reserved_slot"}}{{end}}
+            </button>
+            {{end}}
+        </div>
+    </div>
+</section>
+{{end}}
+{{end}}
+
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">🔥 {{T "home.hot_resources"}}</h2>
+            <a href="/resources" class="section-link">{{T "common.view_all"}} →</a>
+        </div>
+        <div class="resource-grid">
+            {{range .HotResources}}
+            <a href="/resources/{{.ID}}" class="resource-card">
+                <div class="resource-card-header">
+                    <span class="resource-type {{resourceTypeClass .ResourceType}}">{{resourceTypeLabel .ResourceType}}</span>
+                    <span class="resource-views">👁 {{.Views}}</span>
+                </div>
+                <h3 class="resource-card-title">{{.Title}}</h3>
+                <p class="resource-card-desc">{{.Description | truncate 80}}</p>
+                <div class="resource-card-footer">
+                    {{if .Category}}
+                    <span class="resource-category">📁 {{.Category.Name}}</span>
+                    {{end}}
+                    <span class="resource-rating">⭐ {{printf "%.1f" .RatingScore}}</span>
+                </div>
+            </a>
+            {{else}}
+            <p class="empty-state">{{T "home.no_resources"}}</p>
+            {{end}}
+        </div>
+    </div>
+</section>
+
+<section class="section section-alt">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">📝 {{T "home.latest_articles"}}</h2>
+            <a href="/articles" class="section-link">{{T "common.view_all"}} →</a>
+        </div>
+        <div class="article-list">
+            {{range .LatestArticles}}
+            <a href="/articles/{{.ID}}" class="article-card">
+                <h3 class="article-card-title">{{.Title}}</h3>
+                <p class="article-card-summary">{{.Summary | truncate 120}}</p>
+                <div class="article-card-meta">
+                    <span>👤 {{.User.Username}}</span>
+                    <span>👁 {{.Views}}</span>
+                    <span>📅 {{.CreatedAt | formatDate}}</span>
+                </div>
+            </a>
+            {{else}}
+            <p class="empty-state">{{T "home.no_articles"}}</p>
+            {{end}}
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">📂 {{T "home.resource_categories"}}</h2>
+        </div>
+        <div class="category-grid">
+            {{range .Categories}}
+            <a href="/resources?category_id={{.ID}}" class="category-card">
+                <span class="category-icon">📁</span>
+                <span class="category-name">{{.Name}}</span>
+            </a>
+            {{else}}
+            <p class="empty-state full-width">{{T "home.no_categories"}}</p>
+            {{end}}
+        </div>
+    </div>
+</section>
+{{end}}

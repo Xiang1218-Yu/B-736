@@ -1,0 +1,53 @@
+{{define "admin_content"}}
+<table class="admin-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>{{T "auth.username"}}</th>
+            <th>{{T "profile.role"}}</th>
+            <th>{{T "profile.points"}}</th>
+            <th>{{T "profile.status"}}</th>
+            <th>{{T "profile.register_time"}}</th>
+            <th>{{T "admin.columns.action"}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .Users}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td>{{.Username}}</td>
+            <td>
+                <form action="/admin/users/{{.ID}}" method="POST" class="inline-form">
+                    {{csrfField}}
+                    <input type="hidden" name="_method" value="PATCH">
+                    <select name="role" class="form-select-sm" onchange="this.form.submit()">
+                        <option value="user" {{if eq .Role "user"}}selected{{end}}>{{T "role.user"}}</option>
+                        <option value="editor" {{if eq .Role "editor"}}selected{{end}}>{{T "role.editor"}}</option>
+                        <option value="admin" {{if eq .Role "admin"}}selected{{end}}>{{T "role.admin"}}</option>
+                    </select>
+                </form>
+            </td>
+            <td>{{.Points}}</td>
+            <td>
+                <form action="/admin/users/{{.ID}}" method="POST" class="inline-form">
+                    {{csrfField}}
+                    <input type="hidden" name="_method" value="PATCH">
+                    <select name="status" class="form-select-sm {{if eq .Status "active"}}status-active{{else}}status-suspended{{end}}" onchange="this.form.submit()" {{if eq (lower .Username) "admin"}}disabled{{end}}>
+                        <option value="active" {{if eq .Status "active"}}selected{{end}}>{{T "status.active"}}</option>
+                        {{if ne (lower .Username) "admin"}}
+                        <option value="suspended" {{if eq .Status "suspended"}}selected{{end}}>{{T "status.suspended"}}</option>
+                        {{end}}
+                    </select>
+                </form>
+            </td>
+            <td>{{.CreatedAt | formatDate}}</td>
+            <td>-</td>
+        </tr>
+        {{else}}
+        <tr>
+            <td colspan="7" class="empty-cell">{{T "admin.empty.no_data"}}</td>
+        </tr>
+        {{end}}
+    </tbody>
+</table>
+{{end}}
