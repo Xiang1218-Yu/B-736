@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"fmt"
@@ -9,15 +9,7 @@ import (
 	"prompt736/internal/models"
 )
 
-const publicCacheTTL = 2 * time.Minute
-
-const (
-	siteConfigCacheKey = "site-config"
-	categoriesCacheKey = "categories"
-	tagsCacheKey       = "tags"
-	homePageCacheKey   = "home-page"
-)
-
+// homePageCachePayload 首页缓存数据结构
 type homePageCachePayload struct {
 	Stats          map[string]int64
 	HotResources   []models.Resource
@@ -25,6 +17,7 @@ type homePageCachePayload struct {
 	Categories     []models.Category
 }
 
+// resourceListCachePayload 资源列表缓存数据结构
 type resourceListCachePayload struct {
 	Categories []models.Category
 	Tags       []models.Tag
@@ -32,18 +25,19 @@ type resourceListCachePayload struct {
 	Total      int64
 }
 
+// articleListCachePayload 文章列表缓存数据结构
 type articleListCachePayload struct {
 	Articles []models.Article
 	Total    int64
 }
 
+// getCachedValue 从缓存中获取值
 func getCachedValue[T any](app *App, key string) (T, bool) {
 	var zero T
 	value, found := app.Cache.Get(key)
 	if !found {
 		return zero, false
 	}
-
 	typed, ok := value.(T)
 	if !ok {
 		return zero, false
@@ -51,12 +45,14 @@ func getCachedValue[T any](app *App, key string) (T, bool) {
 	return typed, true
 }
 
+// setCachedValue 设置缓存值
 func setCachedValue[T any](app *App, key string, value T, ttl time.Duration) {
 	app.Cache.Set(key, value, ttl)
 }
 
+// getSiteConfig 获取站点配置（带缓存）
 func (app *App) getSiteConfig() (models.SiteConfig, error) {
-	if cached, found := getCachedValue[models.SiteConfig](app, siteConfigCacheKey); found {
+	if cached, found := getCachedValue[models.SiteConfig](app, SiteConfigCacheKey); found {
 		return cached, nil
 	}
 
@@ -65,12 +61,13 @@ func (app *App) getSiteConfig() (models.SiteConfig, error) {
 		return models.SiteConfig{}, err
 	}
 
-	setCachedValue(app, siteConfigCacheKey, siteConfig, publicCacheTTL)
+	setCachedValue(app, SiteConfigCacheKey, siteConfig, PublicCacheTTL)
 	return siteConfig, nil
 }
 
-func (app *App) getCategories() ([]models.Category, error) {
-	if cached, found := getCachedValue[[]models.Category](app, categoriesCacheKey); found {
+// GetCategories 获取分类列表（带缓存）
+func (app *App) GetCategories() ([]models.Category, error) {
+	if cached, found := getCachedValue[[]models.Category](app, CategoriesCacheKey); found {
 		return cached, nil
 	}
 
@@ -79,12 +76,13 @@ func (app *App) getCategories() ([]models.Category, error) {
 		return nil, err
 	}
 
-	setCachedValue(app, categoriesCacheKey, categories, publicCacheTTL)
+	setCachedValue(app, CategoriesCacheKey, categories, PublicCacheTTL)
 	return categories, nil
 }
 
-func (app *App) getTags() ([]models.Tag, error) {
-	if cached, found := getCachedValue[[]models.Tag](app, tagsCacheKey); found {
+// GetTags 获取标签列表（带缓存）
+func (app *App) GetTags() ([]models.Tag, error) {
+	if cached, found := getCachedValue[[]models.Tag](app, TagsCacheKey); found {
 		return cached, nil
 	}
 
@@ -93,12 +91,13 @@ func (app *App) getTags() ([]models.Tag, error) {
 		return nil, err
 	}
 
-	setCachedValue(app, tagsCacheKey, tags, publicCacheTTL)
+	setCachedValue(app, TagsCacheKey, tags, PublicCacheTTL)
 	return tags, nil
 }
 
+// getHomePagePayload 获取首页数据（带缓存）
 func (app *App) getHomePagePayload() (homePageCachePayload, error) {
-	if cached, found := getCachedValue[homePageCachePayload](app, homePageCacheKey); found {
+	if cached, found := getCachedValue[homePageCachePayload](app, HomePageCacheKey); found {
 		return cached, nil
 	}
 
@@ -131,7 +130,7 @@ func (app *App) getHomePagePayload() (homePageCachePayload, error) {
 		return homePageCachePayload{}, err
 	}
 
-	categories, err := app.getCategories()
+	categories, err := app.GetCategories()
 	if err != nil {
 		return homePageCachePayload{}, err
 	}
@@ -148,22 +147,23 @@ func (app *App) getHomePagePayload() (homePageCachePayload, error) {
 		Categories:     categories,
 	}
 
-	setCachedValue(app, homePageCacheKey, payload, publicCacheTTL)
+	setCachedValue(app, HomePageCacheKey, payload, PublicCacheTTL)
 	return payload, nil
 }
 
+// getResourceListPayload 获取资源列表数据（带缓存）
 func (app *App) getResourceListPayload(q string, categoryID, tagID uint, resourceType string, page, pageSize int) (resourceListCachePayload, error) {
 	key := buildResourceListCacheKey(q, categoryID, tagID, resourceType, page, pageSize)
 	if cached, found := getCachedValue[resourceListCachePayload](app, key); found {
 		return cached, nil
 	}
 
-	categories, err := app.getCategories()
+	categories, err := app.GetCategories()
 	if err != nil {
 		return resourceListCachePayload{}, err
 	}
 
-	tags, err := app.getTags()
+	tags, err := app.GetTags()
 	if err != nil {
 		return resourceListCachePayload{}, err
 	}
@@ -205,10 +205,11 @@ func (app *App) getResourceListPayload(q string, categoryID, tagID uint, resourc
 		Total:      total,
 	}
 
-	setCachedValue(app, key, payload, publicCacheTTL)
+	setCachedValue(app, key, payload, PublicCacheTTL)
 	return payload, nil
 }
 
+// getArticleListPayload 获取文章列表数据（带缓存）
 func (app *App) getArticleListPayload(page, pageSize int) (articleListCachePayload, error) {
 	key := fmt.Sprintf("articles:list:%d:%d", page, pageSize)
 	if cached, found := getCachedValue[articleListCachePayload](app, key); found {
@@ -229,10 +230,11 @@ func (app *App) getArticleListPayload(page, pageSize int) (articleListCachePaylo
 		Articles: articles,
 		Total:    total,
 	}
-	setCachedValue(app, key, payload, publicCacheTTL)
+	setCachedValue(app, key, payload, PublicCacheTTL)
 	return payload, nil
 }
 
+// buildResourceListCacheKey 构建资源列表缓存键
 func buildResourceListCacheKey(q string, categoryID, tagID uint, resourceType string, page, pageSize int) string {
 	return fmt.Sprintf(
 		"resources:list:q=%s:category=%d:tag=%d:type=%s:page=%d:size=%d",
