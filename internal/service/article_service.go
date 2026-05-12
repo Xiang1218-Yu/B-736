@@ -3,6 +3,8 @@ package service
 import (
 	"prompt736/internal/models"
 	"prompt736/internal/utils"
+
+	"gorm.io/gorm"
 )
 
 // GetArticleByID 根据ID获取文章

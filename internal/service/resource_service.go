@@ -12,10 +12,12 @@ import (
 	"time"
 
 	"prompt736/internal/models"
+	"prompt736/internal/types"
 	"prompt736/internal/utils"
 
 	"github.com/PuerkitoBio/goquery"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // GetResourceByID 根据ID获取资源
@@ -364,6 +366,6 @@ func (app *App) ShareReward(userID, resourceID uint) error {
 		}
 
 		return tx.Model(&models.User{}).Where("id = ?", userID).
-			Update("points", gorm.Expr("points + ?", utils.ShareRewardPoint)).Error
+			Update("points", gorm.Expr("points + ?", types.ShareRewardPoint)).Error
 	})
 }

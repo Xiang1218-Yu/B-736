@@ -2,9 +2,11 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"time"
 
 	"prompt736/internal/models"
+	"prompt736/internal/types"
 	"prompt736/internal/utils"
 
 	"gorm.io/gorm"
@@ -61,7 +63,7 @@ func (app *App) Checkin(userID uint) error {
 		}
 
 		return tx.Model(&models.User{}).Where("id = ?", userID).Updates(map[string]interface{}{
-			"points":          gorm.Expr("points + ?", utils.CheckinRewardPoint),
+			"points":          gorm.Expr("points + ?", types.CheckinRewardPoint),
 			"last_checkin_at": now,
 		}).Error
 	})

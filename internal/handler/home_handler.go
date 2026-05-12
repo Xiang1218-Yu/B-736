@@ -1,6 +1,10 @@
 package handler
 
-import "prompt736/internal/types"
+import (
+	"prompt736/internal/types"
+
+	"github.com/gin-gonic/gin"
+)
 
 // HomePage 首页
 func (h *Handler) HomePage(c *gin.Context) {

@@ -2,6 +2,8 @@ package service
 
 import (
 	"prompt736/internal/models"
+
+	"gorm.io/gorm"
 )
 
 // ReviewResource 审核资源
